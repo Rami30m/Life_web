@@ -235,3 +235,91 @@ def decrypt_face_descriptor(encrypted_descriptor: str) -> list[float]:
     descriptor_json = decrypt_aes(encrypted_descriptor)
     return json.loads(descriptor_json)
 
+# ===== ФУНКЦИИ ДЛЯ OAUTH CLIENT_SECRET =====
+
+def hash_client_secret(secret: str) -> str:
+    """
+    Хеширует client_secret для OAuth клиентов используя bcrypt
+    (аналогично hash_password, но для ясности отдельная функция)
+    """
+    secret_bytes = secret.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(secret_bytes, salt)
+    return hashed.decode('utf-8')
+
+def verify_client_secret(plain_secret: str, hashed_secret: str) -> bool:
+    """
+    Проверяет соответствие client_secret хешу
+    """
+    secret_bytes = plain_secret.encode('utf-8')
+    hashed_bytes = hashed_secret.encode('utf-8')
+    return bcrypt.checkpw(secret_bytes, hashed_bytes)
+
+def generate_client_id() -> str:
+    """
+    Генерирует уникальный client_id для OAuth клиента
+    """
+    return secrets.token_urlsafe(32)[:50]  # 50 символов URL-safe
+
+def generate_client_secret() -> str:
+    """
+    Генерирует случайный client_secret для OAuth клиента
+    """
+    return secrets.token_urlsafe(48)  # 64 символа URL-safe
+
+# ===== ФУНКЦИИ ДЛЯ OAUTH AUTHORIZATION CODE =====
+
+def generate_authorization_code() -> str:
+    """
+    Генерирует уникальный authorization code для OAuth 2.0 flow
+    Code должен быть одноразовым и иметь ограниченное время жизни (10 минут)
+    """
+    return secrets.token_urlsafe(32)  # 43 символа URL-safe (256 бит энтропии)
+
+def generate_state() -> str:
+    """
+    Генерирует случайный state параметр для защиты от CSRF атак
+    """
+    return secrets.token_urlsafe(24)  # 32 символа URL-safe
+
+# ===== ФУНКЦИИ ДЛЯ OAUTH DEVICE CODE (QR FLOW) =====
+
+def generate_device_code() -> str:
+    """
+    Генерирует длинный device_code для QR flow
+    Используется для проверки статуса авторизации
+    """
+    return secrets.token_urlsafe(32)  # 43 символа URL-safe (256 бит энтропии)
+
+def generate_user_code() -> str:
+    """
+    Генерирует короткий user_code для отображения пользователю
+    Формат: XXXX-XXXX (8 символов, разделенных дефисом)
+    Пример: "ABCD-1234"
+    """
+    # Генерируем 8 случайных символов (A-Z, 0-9)
+    import string
+    chars = string.ascii_uppercase + string.digits
+    code = ''.join(secrets.choice(chars) for _ in range(8))
+    # Форматируем как XXXX-XXXX
+    return f"{code[:4]}-{code[4:]}"
+
+# ===== ФУНКЦИИ ДЛЯ OAUTH VERIFICATION CODE (CODE FLOW) =====
+
+def generate_verification_code() -> str:
+    """
+    Генерирует 6-цифровой код для входа (Magic Link / OTP)
+    Формат: 6 цифр (000000-999999)
+    Пример: "123456"
+    """
+    return ''.join(secrets.choice('0123456789') for _ in range(6))
+
+def generate_code_id() -> str:
+    """
+    Генерирует уникальный code_id для идентификации сессии кода
+    Используется для привязки кода к конкретному запросу
+    """
+    return secrets.token_urlsafe(24)  # 32 символа URL-safe
+
+
+

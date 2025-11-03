@@ -5,13 +5,57 @@ from sqlalchemy import pool
 
 from alembic import context
 
+# ===== ЭТАП 1: SSO ИНФРАСТРУКТУРА =====
 # Импортируем наши модели для autogenerate
+# Alembic использует эти импорты для автоматического определения изменений в БД
 import sys
 from os.path import dirname, abspath
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from database import Base
-from models import User, RefreshToken, BiometricData, Item  # Импортируем все модели
+from models import (
+    # Существующие модели (базовая аутентификация)
+    User,              # Пользователи системы
+    RefreshToken,      # Refresh токены для JWT
+    BiometricData,     # Биометрические данные (face descriptors)
+    Item,              # Пример модели (опционально)
+    
+    # ===== SSO МОДЕЛИ (ДОБАВЛЕНО НА ЭТАПЕ 1) =====
+    # Эти модели нужны для реализации Single Sign-On (SSO) системы,
+    # которая позволяет пользователям входить на другие платформы компании через Life SSO
+    
+    # 1. OAuthClient - Зарегистрированные платформы компании
+    #    Хранит информацию о платформах, которые используют Life SSO для аутентификации
+    #    - client_id: уникальный идентификатор платформы
+    #    - client_secret: секретный ключ (хешированный) для проверки подлинности
+    #    - redirect_uri: URL для возврата после авторизации
+    #    - allowed_scopes: разрешенные области доступа (openid, profile, email)
+    OAuthClient,
+    
+    # 2. OAuthAuthorizationCode - Коды авторизации (OAuth 2.0 Authorization Code Flow)
+    #    Используется для метода входа через простую переадресацию
+    #    - code: одноразовый код авторизации
+    #    - expires_at: время истечения (обычно 10 минут)
+    #    - is_used: флаг использования (код можно использовать только один раз)
+    OAuthAuthorizationCode,
+    
+    # 3. OAuthDeviceCode - Device коды для QR-кода входа
+    #    Используется для метода входа через сканирование QR-кода
+    #    - device_code: длинный код для проверки статуса
+    #    - user_code: короткий код для отображения пользователю (например, "ABCD-1234")
+    #    - status: статус (pending, authorized, expired)
+    #    - user_id: NULL пока не авторизован, заполняется после входа
+    OAuthDeviceCode,
+    
+    # 4. OAuthVerificationCode - Коды для Magic Link / OTP входа
+    #    Используется для метода входа по 6-цифровому коду
+    #    - code_id: уникальный идентификатор сессии кода
+    #    - code: 6-цифровой код (например, "123456")
+    #    - attempts: количество попыток ввода (максимум 5)
+    #    - is_used: флаг использования (код одноразовый)
+    #    - expires_at: время истечения (обычно 5 минут)
+    OAuthVerificationCode
+)  # Импортируем все модели для autogenerate
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

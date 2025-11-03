@@ -174,14 +174,18 @@ export default function BiometricLogin({ onSuccess, onCancel }) {
         throw new Error(data.detail || 'Лицо не распознано');
       }
 
-      // Успех! Передаем токены и данные пользователя
+      // Успех! Передаем токены, данные пользователя и дескриптор
       setStatus({ type: "success", message: "Вход выполнен успешно!" });
       
       setTimeout(() => {
-        onSuccess(data.user, {
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
+        onSuccess(
+          data.user, 
+          {
+            access_token: data.access_token,
+            refresh_token: data.refresh_token
+          },
+          detection.descriptor  // Передаем дескриптор для OAuth
+        );
       }, 1000);
 
     } catch (err) {
