@@ -156,7 +156,9 @@ window.location.href = `http://localhost:8000/sso/authorize?${params}`;
 
 ### Шаг 2: Пользователь входит на Life SSO
 
-Пользователь видит форму входа и вводит email/пароль.
+Пользователь видит форму входа и может войти одним из способов:
+- **Email/Пароль** — стандартный способ входа
+- **Биометрия** — вход через распознавание лица (если зарегистрирована)
 
 ### Шаг 3: Получение authorization code
 
@@ -192,15 +194,18 @@ if (state !== expectedState) {
 
 **Endpoint:** `POST /sso/token`
 
+⚠️ **ВАЖНО:** Этот endpoint принимает данные в формате `application/x-www-form-urlencoded` (Form данные), а не JSON. Это соответствует стандарту OAuth 2.0.
+
 **Запрос:**
-```json
-{
-  "grant_type": "authorization_code",
-  "code": "authorization_code_from_redirect",
-  "client_id": "your_client_id",
-  "client_secret": "your_client_secret",
-  "redirect_uri": "https://myplatform.com/callback"
-}
+
+Content-Type: `application/x-www-form-urlencoded`
+
+```
+grant_type=authorization_code
+&code=authorization_code_from_redirect
+&client_id=your_client_id
+&client_secret=your_client_secret
+&redirect_uri=https://myplatform.com/callback
 ```
 
 **Ответ:**
@@ -225,9 +230,9 @@ if (state !== expectedState) {
 const response = await fetch('http://localhost:8000/sso/token', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded',
   },
-  body: JSON.stringify({
+  body: new URLSearchParams({
     grant_type: 'authorization_code',
     code: code,
     client_id: 'your_client_id',
@@ -644,7 +649,8 @@ localStorage.setItem('accessToken', tokens.access_token);
 
 Life SSO применяет rate limiting для защиты от злоупотреблений:
 
-- **Authorization Code Flow:** 20 запросов/минуту по IP
+- **Authorization Code Flow (email/password):** 5 попыток в 5 минут по email
+- **Authorization Code Flow (биометрия):** 5 попыток в 5 минут по IP адресу
 - **Token Exchange:** 10 запросов/минуту по client_id
 - **QR Initiate:** 10 запросов/минуту по client_id
 - **Code Request:** 1 запрос/минуту по identifier (email/name)
@@ -747,13 +753,13 @@ async function handleCallback() {
 app.post('/api/auth/token', async (req, res) => {
   const { code } = req.body;
   
-  // Обмен code на токены
+  // Обмен code на токены (используем Form данные, не JSON!)
   const response = await fetch('http://localhost:8000/sso/token', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify({
+    body: new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
       client_id: process.env.CLIENT_ID,
@@ -774,9 +780,10 @@ import requests
 
 # Authorization Code Flow
 def exchange_code_for_tokens(code, client_id, client_secret, redirect_uri):
+    # Используем data вместо json для Form данных
     response = requests.post(
         'http://localhost:8000/sso/token',
-        json={
+        data={
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': client_id,

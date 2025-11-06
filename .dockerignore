@@ -1,0 +1,29 @@
+node_modules
+life/node_modules
+life/.next
+**/.next
+**/node_modules
+**/.cache
+
+# Python caches
+**/__pycache__
+**/*.pyc
+
+# VCS
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+**/*.log
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+**/.env
+**/.DS_Store
+
+
+
+

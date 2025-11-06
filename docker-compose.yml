@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: life-sso-postgres
+    environment:
+      POSTGRES_USER: life_sso_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+      POSTGRES_DB: lifeback
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - life-sso-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U life_sso_user -d lifeback"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Life SSO приложение (Backend + Frontend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: life-sso-app
+    # Загружаем переменные из .env файла бекенда (если есть)
+    env_file:
+      - "Life back2/.env"
+    environment:
+      # База данных (используем имя сервиса postgres вместо localhost)
+      # Переопределяем DATABASE_URL, чтобы использовать контейнер postgres
+      DATABASE_URL: postgresql://life_sso_user:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/lifeback
+      
+      # Если переменные не заданы в .env, используем значения по умолчанию
+      SECRET_KEY: ${SECRET_KEY:-change_me_in_production}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      
+      # Порты
+      PORT: 3000
+      
+      # Node.js окружение
+      NODE_ENV: production
+    ports:
+      - "3000:3000"  # Frontend
+      - "8000:8000"  # Backend API
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - life-sso-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  life-sso-network:
+    driver: bridge
+

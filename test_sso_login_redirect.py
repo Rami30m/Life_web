@@ -18,18 +18,20 @@ import requests
 import json
 import sys
 import time
+import socket
 from threading import Thread
 
 # Конфигурация
 API_BASE = 'http://localhost:8000'
 FRONTEND_BASE = 'http://localhost:3000'  # Фронтенд Life SSO
-PLATFORM_PORT = 3001
-PLATFORM_URL = f'http://localhost:{PLATFORM_PORT}'
+PLATFORM_PORT_START = 3002  # Начальный порт для поиска свободного
+PLATFORM_PORT = None  # Будет установлен автоматически
+PLATFORM_URL = None  # Будет установлен автоматически
 
-# Данные для регистрации платформы
+# Данные для регистрации платформы (redirect_uri обновится после выбора порта)
 PLATFORM_DATA = {
     'name': 'Тестовая Платформа для Входа',
-    'redirect_uri': f'{PLATFORM_URL}/callback',
+    'redirect_uri': None,  # Будет установлен после выбора порта
     'allowed_scopes': 'openid profile email'
 }
 
@@ -169,13 +171,37 @@ class CallbackHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+def find_free_port(start_port=3002, max_attempts=100):
+    """Находит свободный порт, начиная с start_port"""
+    for port in range(start_port, start_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(('', port))
+                return port
+            except OSError:
+                continue
+    raise Exception(f"Не удалось найти свободный порт в диапазоне {start_port}-{start_port + max_attempts}")
+
+
 def start_callback_server():
     """Запускает callback сервер в отдельном потоке"""
+    if PLATFORM_PORT is None:
+        raise Exception("Порт не выбран! Сначала вызовите find_free_port()")
+    
     handler = CallbackHandler
     
-    with socketserver.TCPServer(("", PLATFORM_PORT), handler) as httpd:
-        print(f'🌐 Шаг 2: Создан callback сервер на {PLATFORM_URL}/callback\n')
-        httpd.serve_forever()
+    try:
+        with socketserver.TCPServer(("", PLATFORM_PORT), handler) as httpd:
+            print(f'🌐 Шаг 2: Создан callback сервер на {PLATFORM_URL}/callback\n')
+            httpd.serve_forever()
+    except OSError as e:
+        # Если порт всё же занят (редкий случай), выводим ошибку
+        if "10048" in str(e) or "address already in use" in str(e).lower():
+            print(f'❌ Ошибка: Порт {PLATFORM_PORT} занят после выбора!')
+            print(f'   Попробуйте запустить скрипт снова или завершите процесс на порту {PLATFORM_PORT}')
+            raise
+        else:
+            raise
 
 
 def register_user_if_needed():
@@ -457,7 +483,19 @@ def main():
     print('='*60 + '\n')
     
     try:
-        # Шаг 1: Регистрация платформы
+        # Шаг 0: Выбор свободного порта для callback сервера
+        global PLATFORM_PORT, PLATFORM_URL
+        try:
+            PLATFORM_PORT = find_free_port(PLATFORM_PORT_START)
+            PLATFORM_URL = f'http://localhost:{PLATFORM_PORT}'
+            PLATFORM_DATA['redirect_uri'] = f'{PLATFORM_URL}/callback'
+            print(f'🔍 Выбран свободный порт: {PLATFORM_PORT}')
+            print(f'   Callback URL: {PLATFORM_DATA["redirect_uri"]}\n')
+        except Exception as e:
+            print(f'❌ Не удалось найти свободный порт: {e}')
+            return
+        
+        # Шаг 1: Регистрация платформы (с правильным redirect_uri)
         if not register_platform():
             print('❌ Не удалось зарегистрировать платформу')
             return
@@ -465,7 +503,7 @@ def main():
         # Шаг 2: Запуск callback сервера
         callback_thread = Thread(target=start_callback_server, daemon=True)
         callback_thread.start()
-        time.sleep(1)  # Даем время серверу запуститься
+        time.sleep(1.5)  # Даем время серверу запуститься
         
         # Шаг 3: Формирование URL для авторизации
         authorize_url, state = get_authorize_url()

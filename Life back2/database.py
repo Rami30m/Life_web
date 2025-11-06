@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
+import os
 # URL подключения к PostgreSQL
 # Формат: postgresql://пользователь:пароль@хост:порт/имя_бд
-DATABASE_URL = "postgresql://rami:test123455@localhost:5432/lifeback"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://rami:test123455@localhost:5432/lifeback")
 
 # Создание движка базы данных
 engine = create_engine(DATABASE_URL)

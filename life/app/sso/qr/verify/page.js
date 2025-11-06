@@ -1,14 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import dynamic from "next/dynamic";
+import { useState, Suspense } from "react";
+import NextDynamic from "next/dynamic";
 
-const BiometricLogin = dynamic(() => import("../../../components/BiometricLogin"), { ssr: false });
+const BiometricLogin = NextDynamic(() => import("../../../components/BiometricLogin"), { ssr: false });
 
 const API_BASE = "http://localhost:8000";
 
-export default function QRVerifyPage() {
+export const dynamic = 'force-dynamic';
+
+function QRVerifyInner() {
   const searchParams = useSearchParams();
   const userCode = searchParams.get("user_code");
   
@@ -159,6 +161,14 @@ export default function QRVerifyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QRVerifyPage() {
+  return (
+    <Suspense fallback={null}>
+      <QRVerifyInner />
+    </Suspense>
   );
 }
 
