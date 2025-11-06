@@ -42,7 +42,12 @@ app = FastAPI(title="Life SSO API", version="1.0.0")
 # Настройка CORS для связи с фронтендом
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # URL фронтенда
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://v4.life",
+        "https://www.v4.life",
+    ],  # URL фронтенда (prod + dev)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

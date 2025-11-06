@@ -27,6 +27,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SSO_API_BASE: https://api.v4.life
     container_name: life-sso-app
     # Загружаем переменные из .env файла бекенда (если есть)
     env_file:
@@ -47,6 +49,7 @@ services:
       
       # Node.js окружение
       NODE_ENV: production
+      NEXT_PUBLIC_SSO_API_BASE: https://api.v4.life
     ports:
       - "3000:3000"  # Frontend
       - "8000:8000"  # Backend API

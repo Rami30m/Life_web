@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 const BiometricLogin = dynamic(() => import("./BiometricLogin"), { ssr: false });
 
-const API_BASE = "http://localhost:8000";
+import { API_BASE } from "../utils/apiBase";
 
 export default function CodeLogin({ onSuccess, onCancel, clientId, redirectUri }) {
   const [step, setStep] = useState("request"); // request, verify

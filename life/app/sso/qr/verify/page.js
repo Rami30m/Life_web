@@ -6,7 +6,7 @@ import NextDynamic from "next/dynamic";
 
 const BiometricLogin = NextDynamic(() => import("../../../components/BiometricLogin"), { ssr: false });
 
-const API_BASE = "http://localhost:8000";
+import { API_BASE } from "@/app/utils/apiBase";
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +43,7 @@ function QRVerifyInner() {
 
     try {
       // Используем правильный эндпоинт - тот же что и на бэкенде для POST /sso/qr/verify
-      const response = await fetch(`http://localhost:8000/sso/qr/verify`, {
+      const response = await fetch(`${API_BASE}/sso/qr/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({

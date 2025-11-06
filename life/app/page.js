@@ -57,7 +57,8 @@ export default function Home() {
     // Отправляем запрос на сервер для отзыва refresh токена
     if (refreshToken) {
       try {
-        await fetch('http://localhost:8000/logout', {
+        const { API_BASE } = await import('./utils/apiBase');
+        await fetch(`${API_BASE}/logout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

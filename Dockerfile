@@ -2,6 +2,8 @@
 
 # 1) Сборка фронтенда (Next.js)
 FROM node:18-bullseye AS frontend-build
+ARG NEXT_PUBLIC_SSO_API_BASE
+ENV NEXT_PUBLIC_SSO_API_BASE=${NEXT_PUBLIC_SSO_API_BASE}
 WORKDIR /app/life
 
 # Устанавливаем зависимости фронтенда
@@ -15,6 +17,8 @@ RUN npm run build
 
 # 2) Финальный образ: Node + Python (для Next.js и FastAPI)
 FROM node:18-bullseye AS runtime
+ARG NEXT_PUBLIC_SSO_API_BASE
+ENV NEXT_PUBLIC_SSO_API_BASE=${NEXT_PUBLIC_SSO_API_BASE}
 
 # Устанавливаем Python и pip
 RUN apt-get update \

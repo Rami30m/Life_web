@@ -32,7 +32,7 @@
 ### Базовый URL
 
 ```
-http://localhost:8000  # Development
+https://api.v4.life  # Production
 https://sso.life.com    # Production (пример)
 ```
 
@@ -151,7 +151,7 @@ const params = new URLSearchParams({
   scope: 'openid profile email'
 });
 
-window.location.href = `http://localhost:8000/sso/authorize?${params}`;
+window.location.href = `https://api.v4.life/sso/authorize?${params}`;
 ```
 
 ### Шаг 2: Пользователь входит на Life SSO
@@ -227,7 +227,7 @@ grant_type=authorization_code
 **Пример (JavaScript):**
 
 ```javascript
-const response = await fetch('http://localhost:8000/sso/token', {
+const response = await fetch('https://api.v4.life/sso/token', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -286,7 +286,7 @@ QR Code Flow предназначен для случаев, когда поль
 **Пример (JavaScript):**
 
 ```javascript
-const response = await fetch('http://localhost:8000/sso/qr/initiate', {
+const response = await fetch('https://api.v4.life/sso/qr/initiate', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -356,7 +356,7 @@ async function pollQRStatus(deviceCode) {
   const poll = async () => {
     attempts++;
     
-    const response = await fetch('http://localhost:8000/sso/qr/token', {
+    const response = await fetch('https://api.v4.life/sso/qr/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -463,7 +463,7 @@ Code Flow позволяет пользователю войти через 6-ц
 
 ```javascript
 // Шаг 1: Запрос кода
-const requestResponse = await fetch('http://localhost:8000/sso/code/request', {
+const requestResponse = await fetch('https://api.v4.life/sso/code/request', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -480,7 +480,7 @@ alert(message); // "Откройте Life SSO..."
 // Шаг 4: Проверка кода
 const userCode = prompt('Введите 6-цифровой код из Life SSO:');
 
-const verifyResponse = await fetch('http://localhost:8000/sso/code/verify', {
+const verifyResponse = await fetch('https://api.v4.life/sso/code/verify', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -716,7 +716,7 @@ function initiateLogin() {
     scope: 'openid profile email'
   });
   
-  window.location.href = `http://localhost:8000/sso/authorize?${params}`;
+  window.location.href = `https://api.v4.life/sso/authorize?${params}`;
 }
 
 // 2. Обработка callback
@@ -754,7 +754,7 @@ app.post('/api/auth/token', async (req, res) => {
   const { code } = req.body;
   
   // Обмен code на токены (используем Form данные, не JSON!)
-  const response = await fetch('http://localhost:8000/sso/token', {
+  const response = await fetch('https://api.v4.life/sso/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -782,7 +782,7 @@ import requests
 def exchange_code_for_tokens(code, client_id, client_secret, redirect_uri):
     # Используем data вместо json для Form данных
     response = requests.post(
-        'http://localhost:8000/sso/token',
+        'https://api.v4.life/sso/token',
         data={
             'grant_type': 'authorization_code',
             'code': code,
@@ -796,7 +796,7 @@ def exchange_code_for_tokens(code, client_id, client_secret, redirect_uri):
 # QR Code Flow
 def initiate_qr(client_id):
     response = requests.post(
-        'http://localhost:8000/sso/qr/initiate',
+        'https://api.v4.life/sso/qr/initiate',
         json={
             'client_id': client_id,
             'scope': 'openid profile email'
@@ -806,7 +806,7 @@ def initiate_qr(client_id):
 
 def poll_qr_status(device_code, client_id, client_secret):
     response = requests.post(
-        'http://localhost:8000/sso/qr/token',
+        'https://api.v4.life/sso/qr/token',
         json={
             'device_code': device_code,
             'client_id': client_id,

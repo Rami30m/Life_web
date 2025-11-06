@@ -48,7 +48,8 @@ export default function OAuthLoginPage() {
 
     try {
       // Отправка данных на backend
-      const response = await fetch('http://localhost:8000/sso/authorize', {
+      const { API_BASE } = await import('../utils/apiBase');
+      const response = await fetch(`${API_BASE}/sso/authorize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -132,7 +133,8 @@ export default function OAuthLoginPage() {
       // Импортируем функцию для форматирования дескриптора
       import('../utils/faceApi').then(({ formatDescriptorForServer }) => {
         // Используем тот же подход, что и при обычном входе через email/password
-        fetch('http://localhost:8000/sso/authorize', {
+        const { API_BASE } = await import('../utils/apiBase');
+        fetch(`${API_BASE}/sso/authorize`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

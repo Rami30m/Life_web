@@ -33,7 +33,8 @@ export default function RegisterPage({ onSwitch, onSuccess }) {
 
     try {
       // 🔹 Отправка данных на backend
-      const response = await fetch('http://localhost:8000/register', {
+      const { API_BASE } = await import('../utils/apiBase');
+      const response = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

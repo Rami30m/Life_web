@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 const BiometricLogin = dynamic(() => import("./BiometricLogin"), { ssr: false });
 
-const API_BASE = "http://localhost:8000";
+import { API_BASE } from "../utils/apiBase";
 
 export default function QRLogin({ onSuccess, onCancel, clientId, redirectUri, state, scope }) {
   const [step, setStep] = useState("initiate"); // initiate, scanning, authorized

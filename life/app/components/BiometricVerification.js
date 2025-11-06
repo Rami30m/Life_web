@@ -160,7 +160,8 @@ export default function BiometricVerification({ accessToken, onSuccess, onCancel
       }
 
       // Отправка на бэкенд для РЕГИСТРАЦИИ
-      const response = await fetch('http://localhost:8000/biometric/register', {
+      const { API_BASE } = await import('../utils/apiBase');
+      const response = await fetch(`${API_BASE}/biometric/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

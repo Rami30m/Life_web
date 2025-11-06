@@ -160,7 +160,8 @@ export default function BiometricLogin({ onSuccess, onCancel }) {
       }
 
       // Отправка на бэкенд для ВХОДА
-      const response = await fetch('http://localhost:8000/biometric/login', {
+      const { API_BASE } = await import('../utils/apiBase');
+      const response = await fetch(`${API_BASE}/biometric/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
