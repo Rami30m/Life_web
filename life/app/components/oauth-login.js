@@ -131,9 +131,9 @@ export default function OAuthLoginPage() {
     if (clientId && redirectUri && descriptor) {
       setIsBiometricProcessing(true); // Устанавливаем флаг обработки
       // Импортируем функцию для форматирования дескриптора
-      import('../utils/faceApi').then(({ formatDescriptorForServer }) => {
+      import('../utils/faceApi').then(async ({ formatDescriptorForServer }) => {
         // Используем тот же подход, что и при обычном входе через email/password
-        const { API_BASE } = await import('../utils/apiBase');
+        const { default: API_BASE } = await import('../utils/apiBase');
         fetch(`${API_BASE}/sso/authorize`, {
           method: 'POST',
           headers: {
